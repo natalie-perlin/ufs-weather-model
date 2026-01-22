@@ -60,25 +60,14 @@ case ${MACHINE_ID} in
     source "${PATHTR}/modulefiles/ufs_${MACHINE_ID}.${RT_COMPILER}"
     ;;
   *)
-    # Activate lua environment for gaea c5
-    if [[ ${MACHINE_ID} == gaeac5 ]]; then
-      module reset
-    fi
-    if [[ ${MACHINE_ID} == gaeac6 ]]; then
-      module reset
-    elif [[ ${MACHINE_ID} == container ]]; then
-      source /usr/lmod/lmod/init/bash
-      module purge
-    elif [[ ${MACHINE_ID} == hercules ]]; then
-      module purge
-    fi
-
-    # Load fv3 module
-    module use "${PATHTR}/modulefiles"
-    modulefile="ufs_${MACHINE_ID}.${RT_COMPILER}"
-    module load "${modulefile}"
-    module list
+    source "${PATHTR}/tests/module-setup.sh"
 esac
+
+# Load fv3 module
+module use "${PATHTR}/modulefiles"
+modulefile="ufs_${MACHINE_ID}.${RT_COMPILER}"
+module load "${modulefile}"
+module list
 set -x
 
 echo "Compiling ${MAKE_OPT} into ${BUILD_NAME}.exe on ${MACHINE_ID}"
@@ -110,7 +99,11 @@ set -ex
 CMAKE_FLAGS=$(set -e; trim "${CMAKE_FLAGS}")
 echo "CMAKE_FLAGS = ${CMAKE_FLAGS}"
 
-[[ ${clean_before} = YES ]] && rm -rf "${BUILD_DIR}"
+if [[ ${clean_before} = YES ]]; then
+	rm -rf "${BUILD_DIR}"
+else
+	rm -f "${BUILD_DIR}/CMakeCache.txt"
+fi
 
 export BUILD_VERBOSE=1
 export BUILD_DIR
